@@ -20,6 +20,8 @@
   .player-idle{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; background:linear-gradient(140deg,#3c4a6b,#2d2a26); text-align:center; padding:16px; cursor:pointer; }
   .player-idle .big{ font-size:34px; margin-bottom:6px; }
   .player-idle p{ font-size:13px; color:#d8d2c4; line-height:1.6; }
+  .mini-tools{ position:absolute; top:8px; right:8px; z-index:5; display:none; }
+  .mini-tools button{ background:rgba(20,18,14,.72); color:#fff; border:none; border-radius:999px; font-size:12px; padding:6px 12px; cursor:pointer; }
   .now{ display:flex; align-items:center; gap:8px; padding:10px 4px 0; font-size:13px; }
   .now b{ font-size:14px; }
   .now .sp{ flex:1; }
@@ -111,7 +113,9 @@
     nav .in{ max-width:1060px; }
     header{ padding:22px 24px 12px; }
     header .t{ font-size:25px; }
-    .player-zone{ padding:10px 24px 12px; }
+    .player-zone{ padding:10px 24px 12px; position:static; }
+    .player-box.live .mini-tools{ display:block; }
+    .player-box.mini{ position:fixed; right:18px; bottom:86px; width:324px; z-index:70; }
     .view{ padding:4px 24px 12px; }
     #view-today.on{ display:grid; grid-template-columns:1fr 1fr; gap:0 14px; align-items:start; }
     #view-today .sec-title{ grid-column:1 / -1; }
@@ -138,6 +142,7 @@
         <p>点这里，连播今天的晨间歌单<br>也可以点下面任意一首歌，单独播放<br><span style="font-size:12px;">在 iPad 或电脑上打开，播放最顺畅</span></p>
       </div>
       <div id="ytMount" style="width:100%;height:100%;display:none;"></div>
+      <div class="mini-tools"><button id="btnDock" type="button">小窗</button></div>
     </div>
     <div class="now">
       <span>正在播：<b id="nowTitle">还没开始</b></span>
@@ -304,8 +309,7 @@ const SONGS = [
   {id:"YaV4Zq0kLQU", zh:"动物歌大合集", en:"Animal Songs For Kids!", tier:"S", topics:["动物"], plays:10, kind:"spine"},
   {id:"N-6bxyzyHZs", zh:"数香蕉", en:"Counting Bananas + More", tier:"A", topics:["数字","食物"], plays:4, kind:"spine"},
   {id:"bMsP3mtHzNw", zh:"螃蟹爬爬", en:"The Crabs Go Crawling + More", tier:"A", topics:["动物"], plays:6, kind:"spine"},
-  /* ---- 开场三首（真实首夜/次日晨） ---- */
-  {id:"aUdJ-KVr9PM", zh:"两只小黑鸟", en:"Two Little Blackbirds", tier:"B", topics:["动物"], plays:1, kind:"spine", note:"真正的第 0 首"},
+  /* ---- 开场（真实首夜/次日晨） ---- */
   {id:"4XLQpRI_wOQ", zh:"日常生活歌", en:"This Is The Way", tier:"B", topics:["动作","生活"], plays:5, kind:"spine"},
   {id:"hW2DDGX7Tcc", zh:"跟我做", en:"Follow Me", tier:"B", topics:["动作"], plays:2, kind:"spine"},
   /* ---- 互动歌（她点名的微任务曲目 + 动作类） ---- */
@@ -326,7 +330,7 @@ const SONGS = [
   {id:"x8b4f5fhYuw", zh:"做个表情脸 · 万圣节", en:"Can You Make A Happy Face? (Halloween)", tier:"A", topics:["身体","万圣节"], plays:2, kind:"season"},
   {id:"4fLTro4RwM4", zh:"怪物派对 · 万圣节", en:"Monster Party", tier:"A", topics:["万圣节"], plays:3, kind:"season"},
   /* ---- 片单库 C + 没跑出来的季节歌 ---- */
-  {id:"4icFRz0T0wM", zh:"披萨派对", en:"Pizza Party + More", tier:"C", topics:["食物"], plays:2, kind:"lib"},
+  {id:"KP69YPqHquY", zh:"披萨派对", en:"Pizza Party", tier:"C", topics:["食物"], plays:2, kind:"lib"},
   {id:"PGWuZl32s6A", zh:"在海湾边", en:"Down By The Bay + More", tier:"C", topics:["动物"], plays:2, kind:"lib"},
   {id:"A2TLW0WBLow", zh:"形状歌", en:"Shape Songs + More", tier:"C", topics:["形状"], plays:2, kind:"lib"},
   {id:"zG_ve_VZW_U", zh:"在平原上", en:"Down On The Plain + More", tier:"C", topics:["动物"], plays:2, kind:"lib"},
@@ -359,8 +363,7 @@ const LINES = {
   "N-6bxyzyHZs":"数香蕉：边数边玩，数字和水果一起进脑子。这首是晚间引入的，却回流了 112 天。",
   "bMsP3mtHzNw":"螃蟹横着走的样子，孩子会笑。傍晚引入照样跑出 90 天跨度——好歌不挑时段，但晨间更好。",
   "x8b4f5fhYuw":"万圣节包第一首：跟着做表情，情绪词就这么进去了。晨间引入，82 天后还在回流。",
-  "4fLTro4RwM4":"万圣节包里最能打的一首：过了万圣节还在播，跨度 118 天。季节歌选对了，比常青款还耐听。",
-  "aUdJ-KVr9PM":"这套方法的真正第一首：2024 年 9 月 22 日晚上，两只小鸟，一只飞走、一只回来。所有故事都有个开头。"
+  "4fLTro4RwM4":"万圣节包里最能打的一首：过了万圣节还在播，跨度 118 天。季节歌选对了，比常青款还耐听。"
 };
 const LINE_REPLAY = "今天不学新歌——把主歌再唱一遍。唱透一首，顶得上新听十首：宁肯少量千遍，不要千遍一遍。";
 const LINE_REVIEW = "今天是巩固日：没有新歌，把这周的主歌轮着唱。孩子能跟上的，就是真吃进去了。";
@@ -368,7 +371,7 @@ const LINE_TEST = "今天是小测日：不用教新东西。放他最熟的歌�
 
 /* 前 14 天：照她真实引入顺序手工排定（晨间：回放→主歌→互动；支线可换） */
 const PLAN14 = [
-  {main:"4XLQpRI_wOQ", replay:["aUdJ-KVr9PM"], act:"hW2DDGX7Tcc", branch:"GR2o6k8aPlI"},
+  {main:"4XLQpRI_wOQ", replay:[], act:"hW2DDGX7Tcc", branch:"GR2o6k8aPlI"},
   {main:"TjmGTbNLj6Q", replay:["4XLQpRI_wOQ"], act:"fN1Cyr0ZK9M", branch:"GR2o6k8aPlI"},
   {main:"w2DZA3mfAUU", replay:["TjmGTbNLj6Q"], act:"SC6pnWEvVIg", branch:"frN3nvhIHUk"},
   {main:"MdYsH1GgQRQ", replay:["w2DZA3mfAUU"], act:"hW2DDGX7Tcc", branch:"frN3nvhIHUk"},
@@ -386,7 +389,7 @@ const PLAN14 = [
 const ROT_MAIN = ["MdYsH1GgQRQ","YEmFhRK-dTg","YaV4Zq0kLQU","wCio_xVlgQ0","zk5HGN8JXXk","w2DZA3mfAUU","kYKvQ5qi55Y","N-6bxyzyHZs","bMsP3mtHzNw","TjmGTbNLj6Q"];
 const ROT_BRANCH = ["Lxd64ix4sG4","wceMsYSyNUQ","frN3nvhIHUk","W8iWiPeQssw","EgiQ6GliTrI","GR2o6k8aPlI","dcWV933H8sU","3RdIVjiszLw"];
 const ROT_ACT = ["fN1Cyr0ZK9M","SC6pnWEvVIg","hW2DDGX7Tcc","_Ir0Mc6Qilo","3noL0nBOD4M"];
-const LULLABY = ["aUdJ-KVr9PM","yCjJyiqpAuU","dcWV933H8sU"];
+const LULLABY = ["yCjJyiqpAuU","dcWV933H8sU"];
 
 const ACCEPT = [
   {k:"sing", t:"能整首完整跟唱", s:"验收第一项：不是跟几个词，是整首"},
@@ -533,6 +536,7 @@ function playQueue(ids, startAt){
   }
   document.getElementById("playerIdle").style.display = "none";
   document.getElementById("ytMount").style.display = "block";
+  document.querySelector(".player-box").classList.add("live");
   player.loadVideoById(id);
   window.scrollTo({top:0, behavior:"smooth"});
 }
@@ -623,7 +627,7 @@ function renderSetupCard(){
   document.getElementById("btnStart").addEventListener("click", ()=>{ S.setupDone = true; if(!S.start) S.start = TODAY; save(); renderSetupCard(); });
 }
 function renderList(){
-  const order = ["aUdJ-KVr9PM","4XLQpRI_wOQ","hW2DDGX7Tcc","TjmGTbNLj6Q","w2DZA3mfAUU","MdYsH1GgQRQ","kYKvQ5qi55Y","wCio_xVlgQ0","zk5HGN8JXXk","YEmFhRK-dTg","YaV4Zq0kLQU","N-6bxyzyHZs","bMsP3mtHzNw"];
+  const order = ["4XLQpRI_wOQ","hW2DDGX7Tcc","TjmGTbNLj6Q","w2DZA3mfAUU","MdYsH1GgQRQ","kYKvQ5qi55Y","wCio_xVlgQ0","zk5HGN8JXXk","YEmFhRK-dTg","YaV4Zq0kLQU","N-6bxyzyHZs","bMsP3mtHzNw"];
   const mains = order.map(id=>byId[id]).filter(Boolean);
   const acts = SONGS.filter(s=>s.kind==="act");
   const branches = SONGS.filter(s=>s.kind==="branch");
@@ -719,6 +723,44 @@ document.getElementById("btnCast").addEventListener("click", ()=>{
   const t = document.getElementById("castTip");
   t.style.display = (t.style.display === "none") ? "block" : "none";
 });
+/* PC 小窗：宽屏时播放区不吸顶；滚过播放区后自动缩成右下角小窗（占位防跳版），手机/iPad 窄屏不受影响 */
+(function(){
+  const zone = document.querySelector(".player-zone");
+  const box = document.querySelector(".player-box");
+  const btn = document.getElementById("btnDock");
+  if(!zone || !box || !btn) return;
+  const wide = window.matchMedia("(min-width:900px)");
+  let suppress = false; // 手动展开后，直到播放区再次滚出视野才恢复自动小窗
+  function dock(){
+    if(!wide.matches || !box.classList.contains("live") || box.classList.contains("mini")) return;
+    zone.style.minHeight = zone.offsetHeight + "px";
+    box.classList.add("mini");
+    btn.textContent = "展开";
+  }
+  function undock(){
+    box.classList.remove("mini");
+    zone.style.minHeight = "";
+    btn.textContent = "小窗";
+  }
+  btn.addEventListener("click", ()=>{
+    if(box.classList.contains("mini")){
+      suppress = true;
+      undock();
+      zone.scrollIntoView({behavior:"smooth", block:"start"});
+    } else {
+      dock();
+    }
+  });
+  if("IntersectionObserver" in window){
+    new IntersectionObserver((es)=>{
+      const e = es[0];
+      if(!wide.matches) return;
+      if(e.isIntersecting){ suppress = false; undock(); }
+      else if(e.boundingClientRect.top < 0 && !suppress){ dock(); }
+    }, {threshold:0}).observe(zone);
+  }
+  wide.addEventListener && wide.addEventListener("change", ()=>{ if(!wide.matches) undock(); });
+})();
 document.getElementById("btnNight").addEventListener("click", ()=> openNight(0));
 document.getElementById("btnNightOff").addEventListener("click", ()=>{
   document.getElementById("night").classList.remove("on");
