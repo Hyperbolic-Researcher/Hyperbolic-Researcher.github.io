@@ -113,6 +113,16 @@
   .nt-chip{ border:1px solid #3a4160; background:#1a1e30; color:#c9cddd; border-radius:999px; padding:9px 13px; font-size:13px; cursor:pointer; min-height:40px; font-family:inherit; }
   .nt-chip.on{ background:#e2603f; border-color:#e2603f; color:#fff; font-weight:700; }
   #nightTimerLeft{ margin-top:10px; font-size:12px; color:#ffd964; min-height:16px; }
+  /* 三按钮首屏（2026-10-14 重构：呈现路径，不呈现仓库） */
+  .big-play{ width:100%; min-height:66px; font-size:19px; border-radius:18px; margin:2px 0 6px; }
+  .home-note{ font-size:12.5px; color:var(--mut); text-align:center; margin:0 0 14px; line-height:1.6; }
+  .topic-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .topic-btn{ border:1px solid var(--line); background:var(--card); border-radius:16px; min-height:64px; font-size:17px; font-weight:700; color:var(--ink); cursor:pointer; font-family:inherit; padding:10px; }
+  .topic-btn small{ display:block; font-size:11.5px; font-weight:400; color:var(--mut); margin-top:3px; }
+  .topic-btn:active{ transform:scale(.98); }
+  .more-row{ display:flex; justify-content:space-between; align-items:center; width:100%; background:none; border:none; border-bottom:1px solid var(--line); font-size:16px; font-weight:600; color:var(--ink); padding:15px 2px; cursor:pointer; font-family:inherit; text-align:left; }
+  .more-row:last-child{ border-bottom:none; }
+  .more-row span{ color:var(--mut); font-weight:400; }
   .foot-note{ font-size:11.5px; color:#b3a892; line-height:1.7; padding:6px 18px 4px; text-align:center; }
   .hist{ font-size:12.5px; color:#5c554b; padding:8px 0; border-bottom:1px dashed var(--line); line-height:1.6; }
   .hist:last-child{ border-bottom:none; }
@@ -127,7 +137,7 @@
     .player-box.live .mini-tools{ display:block; }
     .player-box.mini{ position:fixed; right:18px; bottom:86px; width:324px; z-index:70; }
     .view{ padding:4px 24px 12px; }
-    #view-today.on{ display:grid; grid-template-columns:1fr 1fr; gap:0 14px; align-items:start; }
+    #view-today.on{ display:block; }
     #view-today .sec-title{ grid-column:1 / -1; }
     #view-today #setupCard, #view-today > .card.hot{ grid-column:1 / -1; }
     #view-grow.on{ display:grid; grid-template-columns:1fr 1fr; gap:0 14px; align-items:start; }
@@ -174,7 +184,7 @@
     <div class="player-box">
       <div class="player-idle" id="playerIdle">
         <div class="big">▶</div>
-        <p>点这里，连播今天的晨间歌单<br>也可以点下面任意一首歌，单独播放<br><span style="font-size:12px;">手机、iPad、电脑打开都能播</span></p>
+        <p>点「今日播放」，今天的内容自动开播、循环播放<br><span style="font-size:12px;">手机、iPad、电脑打开都能播</span></p>
       </div>
       <div id="ytMount" style="width:100%;height:100%;display:none;"></div>
       <div class="mini-tools"><button id="btnDock" type="button">小窗</button></div>
@@ -195,34 +205,49 @@
 
   <!-- ============ 今日 ============ -->
   <section class="view on" id="view-today">
-    <div id="setupCard"></div>
-
+    <div class="card" id="weekCard" style="background:#fdf3e3;">
+      <div class="label" id="weekLabel" style="color:var(--acc-d);">第 1 周</div>
+      <div class="big" id="weekGoal" style="font-size:16px;line-height:1.55;">—</div>
+    </div>
     <div class="card hot">
       <div class="label">今日一句 · 今天为什么放这首</div>
       <div class="big" id="todaySongName">—</div>
       <p id="todayLine">—</p>
     </div>
+    <button class="btn big-play" id="btnTodayPlay">▶ 今日播放</button>
+    <p class="home-note">今天听什么已经排好了，点一下就播；播完自动从头循环，不用守着换。</p>
+    <div class="sec-title">🎲 换个主题 · 孩子烦了、想换口味时，点哪个循环播哪一组</div>
+    <div class="topic-grid" id="topicGrid"></div>
+    <div class="sec-title">🌙 晚上 · 只听声音</div>
+    <button class="btn night big-play" id="btnNightHome">🌙 晚间只听（睡前 / 晨起）</button>
+    <p class="home-note">只放声音、循环播放，还可以设定时关闭，放心睡。</p>
+  </section>
 
+  <section class="view" id="view-more">
+    <div class="sec-title">更多 · 想细看时来这里</div>
+    <div class="card" style="padding-top:4px;padding-bottom:4px;">
+      <button class="more-row" data-goto="list">🎵 片单与全部歌曲库 <span>›</span></button>
+      <button class="more-row" data-goto="log">✏️ 记录 <span>›</span></button>
+      <button class="more-row" data-goto="grow">🌱 成长与验收 <span>›</span></button>
+    </div>
+    <div id="setupCard"></div>
     <div class="sec-title">🌅 晨间歌单 · 先回放，再上主歌（06:00–09:00 最好）</div>
     <div class="card" style="padding-top:6px;padding-bottom:8px;">
       <div id="morningList"></div>
       <button class="btn" id="btnQueueMorning">▶ 连播晨间歌单</button>
     </div>
-
     <div class="card">
       <div class="label" style="color:var(--teal);">🎲 兴趣支线 · 主线不动，按孩子今天的兴趣换一首</div>
       <div class="chips" id="topicChips"></div>
       <div id="branchSlot"></div>
       <p style="margin-top:6px;">孩子最近迷哪个话题，就点哪个——这是一位带过三个孩子的家长的做法：在片单里找他感兴趣的，他才肯一直听。</p>
     </div>
-
     <div class="sec-title">🌙 晚间 · 只回放，不上新（睡前只听不看）</div>
     <div class="card nightc" style="padding-top:6px;padding-bottom:8px;">
       <div id="eveningList"></div>
       <button class="btn night" id="btnNight">🌙 只听模式（睡前 / 晨起）</button>
       <p style="margin-top:8px;">把手机放一边，只放声音：睡前听今天的主歌，起床立刻打开听昨天的内容。视频当音频用，不需要另外买听力设备。</p>
     </div>
-
     <div class="card">
       <div class="label" style="color:#7a6c4f;">🧰 锦囊 · 孩子不肯看、不肯听，怎么办</div>
       <div id="helpBody"></div>
@@ -321,9 +346,10 @@
 
 <nav><div class="in">
   <button data-v="today" class="on"><span class="ic">🏠</span>今日</button>
-  <button data-v="list"><span class="ic">🎵</span>片单</button>
-  <button data-v="log"><span class="ic">✏️</span>记录</button>
-  <button data-v="grow"><span class="ic">🌱</span>成长</button>
+  <button data-v="more"><span class="ic">☰</span>更多</button>
+  <button data-v="list" style="display:none;"><span class="ic">🎵</span>片单</button>
+  <button data-v="log" style="display:none;"><span class="ic">✏️</span>记录</button>
+  <button data-v="grow" style="display:none;"><span class="ic">🌱</span>成长</button>
 </div></nav>
 
 <div id="posterModal" style="display:none;position:fixed;inset:0;background:rgba(20,16,10,.72);z-index:120;align-items:center;justify-content:center;padding:18px;">
@@ -567,7 +593,8 @@ function onYouTubeIframeAPIReady(){
         if(e.data === YT.PlayerState.PLAYING){
           killCaptions();
           applyWake();
-          const id = queue[qIdx];
+          const rawId = queue[qIdx];
+          const id = rawId ? (verCanon[rawId] || rawId) : rawId;
           if(id && !loggedInQueue[id]){ loggedInQueue[id] = 1; S.plays.push({d:TODAY, id:id, ts:Date.now()}); save(); renderGrow(); }
         }
         if(e.data === YT.PlayerState.ENDED){ releaseWake(); nextInQueue(); }
@@ -576,12 +603,26 @@ function onYouTubeIframeAPIReady(){
     }
   });
 }
-function playQueue(ids, startAt){
+/* 同曲多版本：版本 id → 正曲 id（记录与显示都记正曲，声音放版本） */
+const verCanon = {};
+if(typeof VERSIONS !== "undefined"){ Object.keys(VERSIONS).forEach(k=>{ (VERSIONS[k]||[]).forEach(v=>{ verCanon[v] = k; }); }); }
+let queueLoop = false;
+function verPlayId(id){
+  if(dayIndex() < 15) return id; /* 前 14 天引入期用原版；第 15 天起（复现阶段）自动换版本 */
+  const g = (typeof VERSIONS !== "undefined") && VERSIONS[id];
+  if(!g || g.length < 2) return id;
+  const base = g.indexOf(id); if(base < 0) return id;
+  return g[(base + dayIndex()) % g.length];
+}
+function playQueue(ids, startAt, opts){
+  opts = opts || {};
+  queueLoop = !!opts.loop;
   if(!ids.length) return;
+  if(opts.autoVer) ids = ids.map(verPlayId);
   queue = ids.slice(); qIdx = Math.max(0, startAt||0); loggedInQueue = {};
-  const id = queue[qIdx];
-  document.getElementById("nowTitle").textContent = byId[id] ? dispFull(byId[id]) : "—";
-  const nt = document.getElementById("nightTitle"); if(nt) nt.textContent = byId[id] ? dispFull(byId[id]) : "—";
+  const id = queue[qIdx], canon = verCanon[id] || id;
+  document.getElementById("nowTitle").textContent = byId[canon] ? dispFull(byId[canon]) : "—";
+  const nt = document.getElementById("nightTitle"); if(nt) nt.textContent = byId[canon] ? dispFull(byId[canon]) : "—";
   const nf = document.getElementById("nightThumb"); if(nf) nf.src = "https://i.ytimg.com/vi/"+id+"/hqdefault.jpg";
   if(!player || !ytReady){
     // 播放器还没连上（网络慢时 iframe_api 可能晚到）：先等它就绪再在本页播，
@@ -589,7 +630,7 @@ function playQueue(ids, startAt){
     const idle = document.getElementById("playerIdle");
     idle.style.display = "flex";
     idle.querySelector("p").innerHTML = "正在连接播放器，稍等一下…<br><span style=\"font-size:12px;\">网络慢的时候要多等几秒，歌马上就来</span>";
-    pendingPlay = { ids: ids.slice(), startAt: startAt||0 };
+    pendingPlay = { ids: queue.slice(), startAt: qIdx, opts: opts };
     if(pendingWait) clearInterval(pendingWait);
     let waited = 0;
     pendingWait = setInterval(()=>{
@@ -597,7 +638,7 @@ function playQueue(ids, startAt){
       if(player && ytReady){
         clearInterval(pendingWait); pendingWait = null;
         const p = pendingPlay; pendingPlay = null;
-        if(p) playQueue(p.ids, p.startAt);
+        if(p) playQueue(p.ids, p.startAt, p.opts);
       } else if(waited >= 15000){
         clearInterval(pendingWait); pendingWait = null;
         const p = pendingPlay; pendingPlay = null;
@@ -616,11 +657,13 @@ function playQueue(ids, startAt){
 let nightActive = false;
 function nextInQueue(){
   if(nightActive && nightTimerMode() === "track"){ nightStop(); return; }
-  if(qIdx < queue.length-1){ playQueue(queue, qIdx+1); return; }
+  if(qIdx < queue.length-1){ playQueue(queue, qIdx+1, {loop: queueLoop}); return; }
   if(nightActive){
     if(nightTimerMode() === "round"){ nightStop(); return; }
-    playQueue(queue, 0); /* 晚间循环：今晚这几首从头再播 */
+    playQueue(queue, 0, {loop: queueLoop}); /* 晚间循环：今晚这几首从头再播 */
+    return;
   }
+  if(queueLoop){ playQueue(queue, 0, {loop:true}); } /* 预设内容（今日/主题）播完从头循环，不停 */
 }
 function playOne(id){ playQueue([id], 0); }
 
@@ -667,7 +710,7 @@ function openNight(startAt){
   document.getElementById("night").classList.add("on");
   const r = document.getElementById("btnNightResume"); if(r) r.style.display = "none";
   paintNightTimer();
-  playQueue(TP.evening.map(x=>x.id), startAt||0);
+  playQueue(TP.evening.map(x=>x.id), startAt||0, {loop:true, autoVer:true});
   setNightTimer(nightTimerMode());
 }
 /* 晚间睡眠定时（Qiu 2026-10-14）：一直循环 / 播完这轮停 / 播完这首停 / 5–60 分钟后停 */
@@ -714,10 +757,56 @@ function bindNight(scope){
     });
   });
 }
+const WEEK_GOALS = [
+  ["打地基", "孩子愿意看、愿意跟着动起来；家长这周把播放环境搭好。"],
+  ["站稳", "能跟做核心动作；第 14 天做一次互动小测：故意唱错，看孩子纠不纠正。"],
+  ["复现", "熟歌换个版本也跟得上——同一个词在不同版本、不同场景里反复出现，才记得牢。"],
+  ["复现", "哼唱越来越多，开始自己蹦单词。"],
+  ["复现", "听懂歌里的指令，并能做出回应。"],
+  ["复现", "开始出现整首跟唱。"],
+  ["验收预备", "互动纠错常态化：你唱错，他能纠正，就是真懂了。"],
+  ["验收", "按四样标准验收：整首跟唱、核心动作、互动纠错、见实物能表达。"]
+];
+/* 主题一键队列（D2）：精选同主题打头 + 库里同类单曲补到约 25 分钟一轮；库歌只进主题队列，不回首屏 */
+const THEME_TOPICS = ["恐龙","汽车","动物","身体","食物","天气","数字","动作"];
+const THEME_FILL = { "恐龙":{kw:["dinosaur","dino"]}, "汽车":{cat:"汽车"}, "动物":{cat:"动物"}, "身体":{cat:"身体"}, "食物":{cat:"食物"}, "天气":{cat:"天气"}, "数字":{cat:"数字"}, "动作":{cat:"动作"} };
+function themeQueue(topic){
+  const heads = SONGS.filter(s=> s.kind !== "libx" && s.topics && s.topics.indexOf(topic) >= 0)
+    .sort((a,b)=> (b.plays||0)-(a.plays||0)).map(s=> s.id);
+  const seen = {}; heads.forEach(id=>{ seen[id] = 1; });
+  let total = heads.length * 180;
+  const out = heads.slice();
+  const def = THEME_FILL[topic] || {};
+  for(const x of LIBX){
+    if(out.length >= 14 || total >= 1500) break;
+    if(x.t !== "S" || seen[x.i]) continue;
+    const ok = def.cat ? (x.c === def.cat) : (def.kw || []).some(k=> (x.e || "").toLowerCase().indexOf(k) >= 0);
+    if(ok){ out.push(x.i); seen[x.i] = 1; total += (x.d || 150); }
+  }
+  if(topic === "恐龙"){ /* 恐龙单曲在库里少，补同主题合集凑时长（合集里全是恐龙内容） */
+    for(const x of LIBX){
+      if(out.length >= 14 || total >= 1500) break;
+      if(x.t !== "C" || seen[x.i]) continue;
+      if((def.kw || []).some(k=> (x.e || "").toLowerCase().indexOf(k) >= 0)){ out.push(x.i); seen[x.i] = 1; total += (x.d || 600); }
+    }
+  }
+  return out;
+}
 let TP = todayPlan();
 
 function renderToday(){
   document.getElementById("dayPill").textContent = "第 " + dayIndex() + " 天";
+  const wk = Math.ceil(dayIndex()/7);
+  const wl = document.getElementById("weekLabel"), wg = document.getElementById("weekGoal");
+  if(wl && wg){
+    if(wk <= 8){ wl.textContent = "第 " + wk + " 周 · " + WEEK_GOALS[wk-1][0] + "（第 " + dayIndex() + " 天）"; wg.textContent = WEEK_GOALS[wk-1][1]; }
+    else { wl.textContent = "巩固期（第 " + dayIndex() + " 天）"; wg.textContent = "8 周主线已完成：熟歌多版本轮换复现，保持每天听的习惯；阶段切换信号齐了，再进下一阶段。"; }
+  }
+  const tg = document.getElementById("topicGrid");
+  if(tg){
+    tg.innerHTML = THEME_TOPICS.map(t=>{ const q = themeQueue(t); return '<button type="button" class="topic-btn" data-theme="'+t+'">'+t+'<small>'+q.length+' 首 · 循环播</small></button>'; }).join("");
+    tg.querySelectorAll("[data-theme]").forEach(b=> b.addEventListener("click", ()=> playQueue(themeQueue(b.getAttribute("data-theme")), 0, {loop:true})));
+  }
   document.getElementById("todaySongName").textContent = TP.mainName;
   document.getElementById("todayLine").textContent = TP.line;
   document.getElementById("morningList").innerHTML = TP.morning.map(x=>songRow(x)).join("");
@@ -923,7 +1012,16 @@ document.getElementById("playerIdle").addEventListener("click", ()=>{
   if(pendingPlay) return; // 正在等播放器就绪，不重复触发
   playQueue(TP.morning.map(x=>x.id), 0);
 });
-document.getElementById("btnQueueMorning").addEventListener("click", ()=> playQueue(TP.morning.map(x=>x.id), 0));
+document.getElementById("btnQueueMorning").addEventListener("click", ()=> playQueue(TP.morning.map(x=>x.id), 0, {loop:true, autoVer:true}));
+document.getElementById("btnTodayPlay").addEventListener("click", ()=> playQueue(TP.morning.map(x=>x.id), 0, {loop:true, autoVer:true}));
+document.getElementById("btnNightHome").addEventListener("click", ()=> openNight(0));
+document.querySelectorAll("[data-goto]").forEach(b=> b.addEventListener("click", ()=> gotoView(b.getAttribute("data-goto"))));
+function gotoView(v){
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+  document.getElementById("view-"+v).classList.add("on");
+  document.querySelectorAll("nav button").forEach(x=> x.classList.toggle("on", x.getAttribute("data-v") === (v === "today" ? "today" : "more")));
+  window.scrollTo({top:0, behavior:"smooth"});
+}
 document.getElementById("btnCast").addEventListener("click", ()=>{
   const t = document.getElementById("castTip");
   t.style.display = (t.style.display === "none") ? "block" : "none";
