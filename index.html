@@ -107,6 +107,12 @@
   #night p{ color:#9aa0b4; font-size:13px; line-height:1.7; }
   #night .np{ padding:14px 18px calc(18px + env(safe-area-inset-bottom)); }
   #night .np .frame{ border-radius:14px; overflow:hidden; aspect-ratio:16/9; background:#000; opacity:.9; }
+  #night .nt-row{ margin-top:18px; }
+  #night .nt-label{ font-size:12px; color:#9aa0b4; margin-bottom:8px; }
+  .nt-chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .nt-chip{ border:1px solid #3a4160; background:#1a1e30; color:#c9cddd; border-radius:999px; padding:9px 13px; font-size:13px; cursor:pointer; min-height:40px; font-family:inherit; }
+  .nt-chip.on{ background:#e2603f; border-color:#e2603f; color:#fff; font-weight:700; }
+  #nightTimerLeft{ margin-top:10px; font-size:12px; color:#ffd964; min-height:16px; }
   .foot-note{ font-size:11.5px; color:#b3a892; line-height:1.7; padding:6px 18px 4px; text-align:center; }
   .hist{ font-size:12.5px; color:#5c554b; padding:8px 0; border-bottom:1px dashed var(--line); line-height:1.6; }
   .hist:last-child{ border-bottom:none; }
@@ -332,10 +338,16 @@
   <div class="mid">
     <div class="moon">🌙</div>
     <h3>只听模式</h3>
-    <p>屏幕放下，只听声音。<br>正在播：<b id="nightTitle" style="color:#fff;">—</b><br>一首播完会自动接下一首。</p>
+    <p>屏幕放下，只听声音。<br>正在播：<b id="nightTitle" style="color:#fff;">—</b><br>一首播完自动接下一首，今晚这几首会循环播放。</p>
+    <div class="nt-row">
+      <div class="nt-label">定时关闭（到点自动停，可以放心睡）</div>
+      <div class="nt-chips" id="nightTimerChips"></div>
+      <div id="nightTimerLeft"></div>
+    </div>
   </div>
   <div class="np">
     <div class="frame" id="nightFrame"><img id="nightThumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block;"></div>
+    <button class="btn" id="btnNightResume" style="background:#2a9d8f;display:none;margin-bottom:10px;">继续播放</button>
     <button class="btn" id="btnNightOff" style="background:#e2603f;">结束只听，回到页面</button>
   </div>
 </div>
@@ -601,7 +613,15 @@ function playQueue(ids, startAt){
   player.loadVideoById(id);
   window.scrollTo({top:0, behavior:"smooth"});
 }
-function nextInQueue(){ if(qIdx < queue.length-1){ playQueue(queue, qIdx+1); } }
+let nightActive = false;
+function nextInQueue(){
+  if(nightActive && nightTimerMode() === "track"){ nightStop(); return; }
+  if(qIdx < queue.length-1){ playQueue(queue, qIdx+1); return; }
+  if(nightActive){
+    if(nightTimerMode() === "round"){ nightStop(); return; }
+    playQueue(queue, 0); /* 晚间循环：今晚这几首从头再播 */
+  }
+}
 function playOne(id){ playQueue([id], 0); }
 
 /* ================= 渲染 ================= */
@@ -643,8 +663,48 @@ function bindPlay(scope){
 }
 /* 晚间列表点歌 = 进只听模式从这首开始，而不是在页面里放视频 */
 function openNight(startAt){
+  nightActive = true;
   document.getElementById("night").classList.add("on");
+  const r = document.getElementById("btnNightResume"); if(r) r.style.display = "none";
+  paintNightTimer();
   playQueue(TP.evening.map(x=>x.id), startAt||0);
+  setNightTimer(nightTimerMode());
+}
+/* 晚间睡眠定时（Qiu 2026-10-14）：一直循环 / 播完这轮停 / 播完这首停 / 5–60 分钟后停 */
+const NT_OPTS = [["loop","一直循环"],["round","播完这轮"],["track","播完这首"],["5","5分钟"],["10","10分钟"],["15","15分钟"],["20","20分钟"],["30","30分钟"],["40","40分钟"],["50","50分钟"],["60","60分钟"]];
+let ntTimeout = null, ntTick = null, ntDeadline = 0;
+function nightTimerMode(){ return S.nightTimer || "loop"; }
+function paintNightTimer(){
+  const box = document.getElementById("nightTimerChips"); if(!box) return;
+  const cur = nightTimerMode();
+  box.innerHTML = NT_OPTS.map(o=>'<button type="button" class="nt-chip'+(cur===o[0]?" on":"")+'" data-nt="'+o[0]+'">'+o[1]+'</button>').join("");
+  box.querySelectorAll("[data-nt]").forEach(b=> b.addEventListener("click", ()=> setNightTimer(b.getAttribute("data-nt"))));
+}
+function clearNightTimer(){
+  if(ntTimeout){ clearTimeout(ntTimeout); ntTimeout = null; }
+  if(ntTick){ clearInterval(ntTick); ntTick = null; }
+  ntDeadline = 0;
+  const el = document.getElementById("nightTimerLeft"); if(el) el.textContent = "";
+}
+function setNightTimer(mode){
+  S.nightTimer = mode; save(); paintNightTimer(); clearNightTimer();
+  const el = document.getElementById("nightTimerLeft");
+  if(/^\d+$/.test(mode)){
+    const mins = parseInt(mode, 10);
+    ntDeadline = Date.now() + mins*60000;
+    ntTimeout = setTimeout(()=> nightStop(), mins*60000);
+    const paint = ()=>{ const left = Math.max(0, ntDeadline - Date.now()); const mm = Math.floor(left/60000), ss = Math.floor(left%60000/1000); if(el) el.textContent = "还剩 " + mm + ":" + String(ss).padStart(2,"0") + " 后自动关闭"; };
+    paint(); ntTick = setInterval(paint, 1000);
+  }
+  else if(mode === "track"){ if(el) el.textContent = "这首播完就关闭"; }
+  else if(mode === "round"){ if(el) el.textContent = "今晚这几首播完就关闭"; }
+}
+function nightStop(){
+  clearNightTimer();
+  if(player && ytReady){ try{ player.pauseVideo(); }catch(e){} }
+  const t = document.getElementById("nightTitle"); if(t) t.textContent = "定时到了，晚安 🌙";
+  const el = document.getElementById("nightTimerLeft"); if(el) el.textContent = "已停止播放";
+  const r = document.getElementById("btnNightResume"); if(r) r.style.display = "block";
 }
 function bindNight(scope){
   scope.querySelectorAll("[data-night]").forEach(el=>{
@@ -931,8 +991,14 @@ if(btnWake){
   });
 }
 document.getElementById("btnNightOff").addEventListener("click", ()=>{
+  nightActive = false; clearNightTimer();
   document.getElementById("night").classList.remove("on");
   if(player && ytReady){ try{ player.pauseVideo(); }catch(e){} }
+});
+document.getElementById("btnNightResume").addEventListener("click", ()=>{
+  document.getElementById("btnNightResume").style.display = "none";
+  setNightTimer("loop");
+  if(queue.length) playQueue(queue, Math.max(0, qIdx));
 });
 document.getElementById("btnReset").addEventListener("click", ()=>{
   if(confirm("清空全部记录、从第 1 天重新开始？")){ localStorage.removeItem(KEY); location.reload(); }
