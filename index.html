@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Stage 1 儿歌启蒙 · MVP 试用版</title>
+<title>听说读写 · 儿童英语启蒙 Stage 1</title>
 <style>
   :root{ --bg:#f6f1ea; --card:#fff; --ink:#2d2a26; --mut:#8a8175; --acc:#e2603f; --acc-d:#c2512c; --teal:#2a9d8f; --line:#eee0cb; --soft:#fdf8f1; --gold:#ffd964; }
   *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -22,6 +22,10 @@
   .player-idle p{ font-size:13px; color:#d8d2c4; line-height:1.6; }
   .mini-tools{ position:absolute; top:8px; right:8px; z-index:5; display:none; }
   .mini-tools button{ background:rgba(20,18,14,.72); color:#fff; border:none; border-radius:999px; font-size:12px; padding:6px 12px; cursor:pointer; }
+  .chiprow{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{ border:1.5px solid var(--line); background:#fff; color:var(--ink); border-radius:999px; font-size:12.5px; padding:5px 11px; cursor:pointer; }
+  .chip.on{ background:var(--acc); border-color:var(--acc); color:#fff; font-weight:700; }
+  .ver-btn{ flex:none; border:1.5px solid var(--teal); color:var(--teal); background:#fff; border-radius:999px; font-size:11px; font-weight:700; padding:4px 9px; cursor:pointer; }
   .now{ display:flex; align-items:center; gap:8px; padding:10px 4px 0; font-size:13px; }
   .now b{ font-size:14px; }
   .now .sp{ flex:1; }
@@ -126,12 +130,37 @@
     .song .t .zh{ font-size:15px; }
     .card p{ font-size:14px; }
   }
+  /* ===== 动效与高级感（克制版：只动 transform/opacity，不影响家长操作） ===== */
+  @keyframes rise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes idleShift{ 0%{ background-position:0% 40%; } 50%{ background-position:100% 60%; } 100%{ background-position:0% 40%; } }
+  @keyframes glowPulse{ 0%{ box-shadow:0 8px 24px rgba(90,70,40,.25), 0 0 0 0 rgba(226,96,63,.35); } 50%{ box-shadow:0 8px 24px rgba(90,70,40,.25), 0 0 0 7px rgba(226,96,63,0); } 100%{ box-shadow:0 8px 24px rgba(90,70,40,.25), 0 0 0 0 rgba(226,96,63,0); } }
+  .view.on > *{ animation:rise .45s cubic-bezier(.22,.8,.32,1) both; }
+  .view.on > *:nth-child(2){ animation-delay:.05s; } .view.on > *:nth-child(3){ animation-delay:.1s; }
+  .view.on > *:nth-child(4){ animation-delay:.15s; } .view.on > *:nth-child(5){ animation-delay:.2s; }
+  .view.on > *:nth-child(6){ animation-delay:.25s; }
+  header .t{ background:linear-gradient(92deg,#2d2a26 20%,#c2512c 55%,#2d2a26 85%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  header .t small{ -webkit-text-fill-color:#8a8175; }
+  header .daypill{ background:linear-gradient(120deg,#e2603f,#c2512c); box-shadow:0 4px 12px rgba(226,96,63,.35); }
+  .player-idle{ background:linear-gradient(140deg,#46598a,#3c4a6b,#2d2a26,#57413a); background-size:220% 220%; animation:idleShift 9s ease-in-out infinite; }
+  .player-box.live{ animation:glowPulse 2.6s ease-out 2; }
+  .card{ box-shadow:0 2px 10px rgba(120,90,40,.05); }
+  .card.hot{ background:linear-gradient(135deg,#fff3e9,#ffe7d2); }
+  .sec-title{ display:flex; align-items:center; gap:8px; }
+  .sec-title::before{ content:""; width:4px; height:13px; border-radius:2px; background:linear-gradient(180deg,#ffb37a,#e2603f); flex:none; }
+  .song{ transition:background .18s ease, transform .18s ease; border-radius:10px; }
+  @media (hover:hover){ .song:hover{ background:#fdf6ec; transform:translateX(3px); } .btn:hover{ filter:brightness(1.04); } .chip:hover{ border-color:var(--acc); } }
+  .song:active{ transform:scale(.99); }
+  .btn{ transition:transform .12s ease, filter .18s ease, background .18s ease; }
+  .btn:active{ transform:scale(.985); }
+  .stat{ background:linear-gradient(160deg,#fffdf9,#fdf3e3); }
+  .stat .n{ background:linear-gradient(120deg,#c2512c,#e2603f); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
 </style>
 </head>
 <body>
 <div class="app">
   <header>
-    <div class="t">儿歌启蒙 · Stage 1<small>照着做，就能复现 · 请在 iPad 或电脑上打开播放</small></div>
+    <div class="t">听说读写 · 儿童英语启蒙<small>Stage 1 儿歌阶段 · 照着做，就能复现</small></div>
     <div class="daypill" id="dayPill">第 1 天</div>
   </header>
 
@@ -139,7 +168,7 @@
     <div class="player-box">
       <div class="player-idle" id="playerIdle">
         <div class="big">▶</div>
-        <p>点这里，连播今天的晨间歌单<br>也可以点下面任意一首歌，单独播放<br><span style="font-size:12px;">在 iPad 或电脑上打开，播放最顺畅</span></p>
+        <p>点这里，连播今天的晨间歌单<br>也可以点下面任意一首歌，单独播放<br><span style="font-size:12px;">手机、iPad、电脑打开都能播</span></p>
       </div>
       <div id="ytMount" style="width:100%;height:100%;display:none;"></div>
       <div class="mini-tools"><button id="btnDock" type="button">小窗</button></div>
@@ -148,6 +177,7 @@
       <span>正在播：<b id="nowTitle">还没开始</b></span>
       <span class="sp"></span>
       <button class="mini-btn" id="btnCast">📺 设备指南</button>
+      <button class="mini-btn" id="btnWake">防熄屏：开</button>
     </div>
     <div class="tip" id="castTip" style="display:none;margin-top:10px;">
       <b>在什么设备上放？</b><br>
@@ -177,7 +207,7 @@
       <div class="label" style="color:var(--teal);">🎲 兴趣支线 · 主线不动，按孩子今天的兴趣换一首</div>
       <div class="chips" id="topicChips"></div>
       <div id="branchSlot"></div>
-      <p style="margin-top:6px;">孩子最近迷哪个话题，就点哪个——这是带过三个孩子的妈妈的原话做法：在片单里找他感兴趣的，他才肯一直听。</p>
+      <p style="margin-top:6px;">孩子最近迷哪个话题，就点哪个——这是一位带过三个孩子的家长的做法：在片单里找他感兴趣的，他才肯一直听。</p>
     </div>
 
     <div class="sec-title">🌙 晚间 · 只回放，不上新（睡前只听不看）</div>
@@ -207,6 +237,22 @@
       <div id="libList"></div>
       <p style="margin-top:6px;">这些歌不是不好，是在真实记录里没跑出来（播 1–2 次就沉了）。先不排进日程；孩子哪天点名要听，从这里放给他就行。</p>
     </div>
+    <div class="sec-title">全部歌曲库 · SSS 官方频道</div>
+    <div class="card" style="padding-top:10px;padding-bottom:10px;">
+      <p>官方频道一共 778 条视频，去重、去掉已在上面片单里的，这里还有 <b>675 首</b>（单曲 385 + 合集 290），已按主题分好类。不排日程，专供翻着玩：孩子迷什么话题就点什么分类，随手点开一首就是新兴趣入口。</p>
+      <div class="sec-title" style="margin-top:10px;">合集专区 · 熟歌打底，新歌穿插</div>
+      <p>合集是个钩子：熟悉的歌托底，新歌时不时冒出来，孩子不腻、看得更久，耳朵还顺带开了新地图。下面是主题明确的长合集，点开就是大半个小时的背景场。</p>
+      <div id="libxComp"></div>
+      <input type="text" id="libxQ" placeholder="搜歌名（英文），比如 dinosaur / counting / halloween" style="margin-top:10px;">
+      <div class="chiprow" id="libxCats" style="margin-top:10px;"></div>
+      <div class="chiprow" id="libxTypes" style="margin-top:6px;"></div>
+      <div id="libxList" style="margin-top:8px;"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+        <span id="libxCount" style="font-size:12.5px;color:var(--mut);"></span>
+        <span class="sp"></span>
+        <button class="mini-btn" id="libxMore" type="button">显示更多</button>
+      </div>
+    </div>
   </section>
 
   <!-- ============ 记录 ============ -->
@@ -234,7 +280,7 @@
       <div class="label">Stage 1 进程 · 约 3 个月打底</div>
       <div class="bar"><i id="progBar" style="width:0%"></i></div>
       <p id="progText">刚开始。儿歌阶段不赶进度——宁肯少量千遍，不要千遍一遍。</p>
-      <p style="margin-top:6px;">一个有意思的里程碑：带这三个孩子的妈妈记录到，累计输入约 <b>250 小时</b>左右，孩子陆续开始说英语梦话。到了那个阶段，留意一下孩子睡着了说什么。</p>
+      <p style="margin-top:6px;">一个有意思的里程碑：一位带过三个孩子的家长在记录里写到，累计输入约 <b>250 小时</b>左右，三个孩子陆续开始说英语梦话。到了那个阶段，留意一下孩子睡着了说什么。</p>
     </div>
     <div class="card">
       <div class="label">验收清单 · 这样算 Stage 1 过关（点一点，勾上）</div>
@@ -264,7 +310,7 @@
     </div>
   </section>
 
-  <p class="foot-note">试用版说明：歌单顺序、分级与验收标准，来自一位妈妈两年带三个孩子的真实播放记录（20,550 条）与她亲自定的标准；括号里是每首歌当年在她家的复播次数（记录计数，非观看遍数）。视频为 YouTube 官方嵌入播放。「今日一句」为试用版文案。</p>
+  <p class="foot-note">说明：本页歌单的顺序、分级与验收标准，来自一位家长两年带三个孩子的真实播放记录（20,550 条）与她亲自定的标准；括号内是每首歌当年的复播次数（记录计数，非精确观看遍数）。视频为 YouTube 官方嵌入播放。</p>
 </div>
 
 <nav><div class="in">
@@ -294,6 +340,7 @@
   </div>
 </div>
 
+<script src="data.js"></script>
 <script>
 /* ================= 数据：全部来自 Qiu 的真实播放记录 =================
    plays = 当年在她家的阶段内复播次数（记录计数）；tier = 五维分级结果 */
@@ -348,7 +395,13 @@ const SONGS = [
 ];
 const byId = {}; SONGS.forEach(s => byId[s.id] = s);
 
-/* 今日一句：每首主歌一句「为什么放这首」（试用版文案，源自她的方法与数据） */
+/* 全部歌曲库 + 同曲多版本组：数据在同目录 data.js（window.LIBX / window.VERSIONS）；文件缺失时降级为空，核心 41 首不受影响 */
+const LIBX = window.LIBX || [];
+LIBX.forEach(x => { if(!byId[x.i]) byId[x.i] = {id:x.i, zh:x.e, en:"", tier:"C", topics:[x.c], plays:0, kind:"libx"}; });
+const VERSIONS = window.VERSIONS || {};
+let verCursor = {};
+
+/* 今日一句：每首主歌一句「为什么放这首」（正式文案，源自她的方法与数据） */
 const LINES = {
   "4XLQpRI_wOQ":"洗脸、刷牙、穿衣服——日常动作全在这首里。启蒙第一步不是认单词，是让孩子先听懂「生活」。",
   "hW2DDGX7Tcc":"第一首「跟我做」的歌：你动，他跟。身体先听懂，嘴巴随后就到。",
@@ -479,7 +532,7 @@ function todayPlan(){
   else if(!p.main) line = LINE_REVIEW;
   else if(p.isReplayMain) line = LINE_REPLAY;
   else line = LINES[p.main] || LINE_REPLAY;
-  return { plan:p, morning:morning, evening:evening, line:line, mainName: p.main ? byId[p.main].zh : (p.test ? "小测日" : "巩固日") };
+  return { plan:p, morning:morning, evening:evening, line:line, mainName: p.main ? dispFull(byId[p.main]) : (p.test ? "小测日" : "巩固日") };
 }
 
 /* ================= 播放器（YouTube 官方嵌入） ================= */
@@ -487,18 +540,26 @@ let player = null, ytReady = false;
 let queue = [], qIdx = -1, loggedInQueue = {};
 let pendingPlay = null, pendingWait = null;
 const tag = document.createElement("script"); tag.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(tag);
+function killCaptions(){ /* 启蒙阶段一律无字幕：卸掉字幕模块，防止系统自动开字幕 */
+  if(!player) return;
+  try{ player.unloadModule("captions"); }catch(e){}
+  try{ player.unloadModule("cc"); }catch(e){}
+}
 function onYouTubeIframeAPIReady(){
   player = new YT.Player("ytMount", {
     width:"100%", height:"100%",
-    playerVars:{ rel:0, playsinline:1, modestbranding:1 },
+    playerVars:{ rel:0, playsinline:1, modestbranding:1, cc_load_policy:0 },
     events:{
-      onReady: function(){ ytReady = true; document.getElementById("ytMount").style.display = "block"; },
+      onReady: function(){ ytReady = true; document.getElementById("ytMount").style.display = "block"; killCaptions(); },
       onStateChange: function(e){
         if(e.data === YT.PlayerState.PLAYING){
+          killCaptions();
+          applyWake();
           const id = queue[qIdx];
           if(id && !loggedInQueue[id]){ loggedInQueue[id] = 1; S.plays.push({d:TODAY, id:id, ts:Date.now()}); save(); renderGrow(); }
         }
-        if(e.data === YT.PlayerState.ENDED){ nextInQueue(); }
+        if(e.data === YT.PlayerState.ENDED){ releaseWake(); nextInQueue(); }
+        if(e.data === YT.PlayerState.PAUSED){ releaseWake(); }
       }
     }
   });
@@ -507,8 +568,8 @@ function playQueue(ids, startAt){
   if(!ids.length) return;
   queue = ids.slice(); qIdx = Math.max(0, startAt||0); loggedInQueue = {};
   const id = queue[qIdx];
-  document.getElementById("nowTitle").textContent = byId[id] ? byId[id].zh : "—";
-  const nt = document.getElementById("nightTitle"); if(nt) nt.textContent = byId[id] ? byId[id].zh : "—";
+  document.getElementById("nowTitle").textContent = byId[id] ? dispFull(byId[id]) : "—";
+  const nt = document.getElementById("nightTitle"); if(nt) nt.textContent = byId[id] ? dispFull(byId[id]) : "—";
   const nf = document.getElementById("nightThumb"); if(nf) nf.src = "https://i.ytimg.com/vi/"+id+"/hqdefault.jpg";
   if(!player || !ytReady){
     // 播放器还没连上（网络慢时 iframe_api 可能晚到）：先等它就绪再在本页播，
@@ -545,6 +606,10 @@ function playOne(id){ playQueue([id], 0); }
 
 /* ================= 渲染 ================= */
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+/* 显示口径（Qiu 2026-10-14）：家长与孩子的交流逐步往英语靠——歌名一律英文为主、中文为辅，全站统一 */
+function dispMain(s){ return s ? (s.en || s.zh || "") : ""; }
+function dispSub(s){ return (s && s.en && s.zh && s.en !== s.zh) ? s.zh : ""; }
+function dispFull(s){ if(!s) return "—"; const m = dispMain(s), sub = dispSub(s); return sub ? m + "（" + sub + "）" : m; }
 function songRow(item, opts){
   opts = opts || {};
   const s = byId[item.id]; if(!s) return "";
@@ -552,16 +617,28 @@ function songRow(item, opts){
   const plays = s.plays > 0 ? '<span class="tag">当年复播 '+s.plays+' 次</span>' : "";
   const note = s.note ? '<span class="note-line">'+esc(s.note)+'</span>' : "";
   const attr = opts.night ? ' data-night="'+s.id+'"' : ' data-play="'+s.id+'"';
+  const ver = (!opts.night && typeof VERSIONS !== "undefined" && VERSIONS[s.id]) ? '<button class="ver-btn" type="button" data-ver="'+s.id+'">换版本</button>' : "";
   return '<div class="song"'+attr+'>'
     + '<img class="thumb" loading="lazy" src="https://i.ytimg.com/vi/'+s.id+'/mqdefault.jpg" alt="">'
-    + '<span class="t"><span class="zh">'+role+esc(s.zh)+'</span><span class="en">'+esc(s.en)+'</span>' + note + '</span>'
+    + '<span class="t"><span class="zh">'+role+esc(dispMain(s))+'</span><span class="en">'+esc(dispSub(s))+'</span>' + note + '</span>'
     + plays
     + '<span class="badge '+s.tier.toLowerCase()+'">'+s.tier+'</span>'
+    + ver
     + '<span class="play-ic">▶</span></div>';
 }
 function bindPlay(scope){
   scope.querySelectorAll("[data-play]").forEach(el=>{
     el.addEventListener("click", ()=> playOne(el.getAttribute("data-play")));
+  });
+  scope.querySelectorAll("[data-ver]").forEach(el=>{
+    el.addEventListener("click", ev=>{
+      ev.stopPropagation();
+      const id = el.getAttribute("data-ver"), g = (typeof VERSIONS !== "undefined") && VERSIONS[id];
+      if(!g || g.length < 2) return;
+      let i = (verCursor[id] !== undefined ? verCursor[id] : g.indexOf(id));
+      i = (i + 1) % g.length; verCursor[id] = i;
+      playOne(g[i]);
+    });
   });
 }
 /* 晚间列表点歌 = 进只听模式从这首开始，而不是在页面里放视频 */
@@ -642,6 +719,59 @@ function renderList(){
   document.getElementById("libList").innerHTML = SONGS.filter(s=>s.kind==="lib").map(s=>songRow({id:s.id})).join("");
   bindPlay(document.getElementById("view-list"));
 }
+/* ===== 全部歌曲库（LIBX）：分类 + 类型 + 搜索，增量渲染 ===== */
+const libxState = { cat:"全部", type:"全部", q:"", shown:60 };
+function libxDur(d){
+  if(!d) return "";
+  const h = Math.floor(d/3600), m = Math.floor((d%3600)/60), s = d%60;
+  return h > 0 ? h+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0") : m+":"+String(s).padStart(2,"0");
+}
+function libxRow(x){
+  const vn = (typeof VERSIONS !== "undefined" && VERSIONS[x.i]) ? VERSIONS[x.i].length : 0;
+  const meta = [x.c, x.t==="C" ? "合集" : "单曲", libxDur(x.d), x.s, vn >= 2 ? "共 " + vn + " 个版本" : ""].filter(Boolean).join(" · ");
+  const ver = vn >= 2 ? '<button class="ver-btn" type="button" data-ver="'+x.i+'">换版本</button>' : "";
+  return '<div class="song" data-play="'+x.i+'">'
+    + '<img class="thumb" loading="lazy" src="https://i.ytimg.com/vi/'+x.i+'/mqdefault.jpg" alt="">'
+    + '<span class="t"><span class="zh" style="font-size:14px;">'+esc(x.e)+'</span><span class="en">'+esc(meta)+'</span></span>'
+    + ver
+    + '<span class="play-ic">▶</span></div>';
+}
+function libxFiltered(){
+  const q = libxState.q.trim().toLowerCase();
+  return LIBX.filter(x =>
+    (libxState.cat === "全部" || x.c === libxState.cat) &&
+    (libxState.type === "全部" ? true :
+      libxState.type === "合集" ? x.t === "C" :
+      libxState.type === "多版本" ? (typeof VERSIONS !== "undefined" && !!VERSIONS[x.i]) : x.t === "S") &&
+    (!q || x.e.toLowerCase().includes(q)));
+}
+function renderLibx(){
+  const cats = ["全部", ...new Set(LIBX.map(x=>x.c))];
+  const catCount = c => c === "全部" ? LIBX.length : LIBX.filter(x=>x.c===c).length;
+  document.getElementById("libxCats").innerHTML = cats.map(c =>
+    '<button type="button" class="chip'+(libxState.cat===c?" on":"")+'" data-cat="'+c+'">'+c+' '+catCount(c)+'</button>').join("");
+  document.getElementById("libxTypes").innerHTML = ["全部","单曲","合集","多版本"].map(t =>
+    '<button type="button" class="chip'+(libxState.type===t?" on":"")+'" data-type="'+t+'">'+t+'</button>').join("");
+  const list = libxFiltered();
+  document.getElementById("libxList").innerHTML =
+    list.slice(0, libxState.shown).map(libxRow).join("") ||
+    '<p style="padding:10px 2px;">这个分类/关键词下暂时没有歌，换个词试试。</p>';
+  document.getElementById("libxCount").textContent = "共 " + list.length + " 首，已显示 " + Math.min(libxState.shown, list.length) + " 首";
+  document.getElementById("libxMore").style.display = list.length > libxState.shown ? "" : "none";
+  document.querySelectorAll("#libxCats [data-cat]").forEach(b => b.addEventListener("click", ()=>{ libxState.cat = b.getAttribute("data-cat"); libxState.shown = 60; renderLibx(); }));
+  document.querySelectorAll("#libxTypes [data-type]").forEach(b => b.addEventListener("click", ()=>{ libxState.type = b.getAttribute("data-type"); libxState.shown = 60; renderLibx(); }));
+  bindPlay(document.getElementById("libxList"));
+}
+document.getElementById("libxMore").addEventListener("click", ()=>{ libxState.shown += 60; renderLibx(); });
+document.getElementById("libxQ").addEventListener("input", e =>{ libxState.q = e.target.value; libxState.shown = 60; renderLibx(); });
+renderLibx();
+/* 合集专区：主题明确的长合集优先 */
+(function(){
+  const comps = LIBX.filter(x => x.t === "C" && x.c !== "其他" && x.d >= 1200 && x.d <= 5400)
+    .sort((a, b) => b.d - a.d).slice(0, 10);
+  document.getElementById("libxComp").innerHTML = comps.map(libxRow).join("");
+  bindPlay(document.getElementById("libxComp"));
+})();
 const REACTS = [ {k:"hum", t:"跟着哼唱", cls:""}, {k:"act", t:"跟着做动作", cls:"alt"}, {k:"away", t:"走开了", cls:"grey"} ];
 function renderLog(){
   const items = TP.morning.concat(TP.plan.branch ? [{id:TP.plan.branch, role:"支线"}] : []);
@@ -649,7 +779,7 @@ function renderLog(){
   const dayReact = S.react[TODAY] || {};
   document.getElementById("logList").innerHTML = uniq.map(x=>{
     const s = byId[x.id]; const cur = dayReact[x.id];
-    return '<div class="card" style="padding-top:12px;"><div class="big" style="font-size:14px;">'+esc(s.zh)+' <span class="tag">'+esc(x.role||"")+'</span></div>'
+    return '<div class="card" style="padding-top:12px;"><div class="big" style="font-size:14px;">'+esc(dispMain(s))+(dispSub(s) ? ' <span style="font-size:12px;color:var(--mut);font-weight:400;">'+esc(dispSub(s))+'</span>' : '')+' <span class="tag">'+esc(x.role||"")+'</span></div>'
       + '<div class="seg">' + REACTS.map(r=>'<button data-r="'+x.id+':'+r.k+'" class="'+(cur===r.k ? "on "+r.cls : "")+'">'+r.t+'</button>').join("") + '</div></div>';
   }).join("");
   document.querySelectorAll("[data-r]").forEach(b=>{
@@ -669,7 +799,7 @@ function renderLog(){
   document.getElementById("histList").innerHTML = days.length ? days.map(d=>{
     const r = S.react[d] || {}; const names = Object.keys(r).map(id=>{
       const lab = {hum:"哼唱", act:"做动作", away:"走开"}[r[id]] || "";
-      return byId[id] ? byId[id].zh + "（" + lab + "）" : "";
+      return byId[id] ? dispFull(byId[id]) + " · " + lab : "";
     }).filter(Boolean).join("、");
     return '<div class="hist"><b>'+d+'</b>　'+(names || "—")+(S.interact[d] ? '　· 互动 ✓' : "")+'</div>';
   }).join("") : '<div class="hist">还没有记录。今天看完第一首，回来点一下试试。</div>';
@@ -679,9 +809,9 @@ function renderGrow(){
   const logDays = {}; Object.keys(S.react).forEach(d=>{ if(Object.keys(S.react[d]).length) logDays[d] = 1; });
   Object.keys(S.interact).forEach(d=> logDays[d] = 1);
   const activeDays = new Set(Object.keys(playDays).concat(Object.keys(logDays)));
-  document.getElementById("statDays").textContent = activeDays.size;
-  document.getElementById("statPlays").textContent = S.plays.length;
-  document.getElementById("statLogs").textContent = Object.keys(logDays).length;
+  countUp(document.getElementById("statDays"), activeDays.size);
+  countUp(document.getElementById("statPlays"), S.plays.length);
+  countUp(document.getElementById("statLogs"), Object.keys(logDays).length);
   const pct = Math.min(100, Math.round(dayIndex()/90*100));
   document.getElementById("progBar").style.width = pct + "%";
   document.getElementById("progText").textContent =
@@ -702,6 +832,21 @@ function renderGrow(){
       save(); renderGrow(); renderSetupCard();
     });
   });
+}
+
+/* 成长数字滚动（小动效：从当前显示值滚到新值） */
+function countUp(el, to){
+  if(!el) return;
+  const from = parseInt(el.textContent, 10) || 0;
+  if(from === to){ el.textContent = to; return; }
+  if(el._cu) cancelAnimationFrame(el._cu);
+  const t0 = performance.now(), dur = 550;
+  const step = t => {
+    const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(from + (to - from) * e);
+    if(p < 1) el._cu = requestAnimationFrame(step);
+  };
+  el._cu = requestAnimationFrame(step);
 }
 
 /* ================= 交互绑定 ================= */
@@ -762,6 +907,29 @@ document.getElementById("btnCast").addEventListener("click", ()=>{
   wide.addEventListener && wide.addEventListener("change", ()=>{ if(!wide.matches) undock(); });
 })();
 document.getElementById("btnNight").addEventListener("click", ()=> openNight(0));
+/* 防熄屏：播放时保持屏幕常亮。真·熄屏续播是系统留给原生 App 的能力，网页做不到；这是网页端最接近的方案 */
+let wakeLockObj = null;
+function wakeWanted(){ return S.wake !== false; }
+async function applyWake(){
+  if(!wakeWanted() || !("wakeLock" in navigator)) return;
+  try{ wakeLockObj = await navigator.wakeLock.request("screen"); }catch(e){}
+}
+function releaseWake(){ try{ if(wakeLockObj) wakeLockObj.release(); }catch(e){} wakeLockObj = null; }
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState === "visible" && player && ytReady){
+    try{ if(player.getPlayerState && player.getPlayerState() === 1) applyWake(); }catch(e){}
+  }
+});
+const btnWake = document.getElementById("btnWake");
+function paintWake(){ if(btnWake) btnWake.textContent = "防熄屏：" + (wakeWanted() ? "开" : "关"); }
+if(btnWake){
+  if(!("wakeLock" in navigator)){ btnWake.style.display = "none"; }
+  paintWake();
+  btnWake.addEventListener("click", ()=>{
+    S.wake = !wakeWanted(); save(); paintWake();
+    if(wakeWanted()) applyWake(); else releaseWake();
+  });
+}
 document.getElementById("btnNightOff").addEventListener("click", ()=>{
   document.getElementById("night").classList.remove("on");
   if(player && ytReady){ try{ player.pauseVideo(); }catch(e){} }
@@ -793,7 +961,7 @@ document.getElementById("btnPoster").addEventListener("click", ()=>{
   x.fillText("验收进度 " + acc + " / " + ACCEPT.length, 540, 670);
   if(TP.plan.main){
     x.font = "600 44px sans-serif"; x.fillStyle = "#5c554b";
-    x.fillText("今日主歌：《" + byId[TP.plan.main].zh + "》", 540, 790);
+    x.fillText("今日主歌：" + dispMain(byId[TP.plan.main]), 540, 790);
   }
   x.fillStyle = "#2d2a26"; x.font = "800 62px sans-serif";
   x.fillText("宁肯少量千遍，不要千遍一遍", 540, 950);
@@ -801,8 +969,8 @@ document.getElementById("btnPoster").addEventListener("click", ()=>{
   x.fillText("不背单词，不刷题", 540, 1050);
   x.fillText("照着顺序唱，先把耳朵唱开", 540, 1110);
   x.font = "500 34px sans-serif"; x.fillStyle = "#a3988a";
-  x.fillText("一位带三个孩子的妈妈的真实方法", 540, 1260);
-  x.fillText("园博一号小区 · 种子家庭体验中", 540, 1320);
+  x.fillText("一位带过三个孩子的家长的真实方法", 540, 1260);
+  x.fillText("首批种子家庭体验中", 540, 1320);
   const url = c.toDataURL("image/png");
   document.getElementById("posterImg").src = url;
   document.getElementById("posterSave").href = url;
